@@ -14,6 +14,7 @@ var {
   TouchableOpacity,
   ActivityIndicatorIOS,
   ScrollView,
+  StatusBarIOS,
 } = React;
 var xmldoc = require('xmldoc');
 
@@ -85,6 +86,12 @@ var ApodReactNative = React.createClass({
     if (!this.state.loaded) {
       return this.renderLoading();
     }
+    StatusBarIOS.setStyle(2, false);
+    if (this.state.cover) {
+      StatusBarIOS.setHidden(true, 1);
+    } else {
+      StatusBarIOS.setHidden(false, 1);
+    }
 
     return (
         <ScrollView horizontal={true} pagingEnabled={true} style={styles.apodPager}>
@@ -151,6 +158,7 @@ var styles = StyleSheet.create({
     width:375,
     height:667,
     flex: 1,
+    backgroundColor: 'rgba(0,0,0,0)',
   },
   apodDescription: {
     textAlign: 'center',
@@ -160,6 +168,7 @@ var styles = StyleSheet.create({
   },
   apodPager: {
     flex: 1,
+    backgroundColor: '#000000',
   }
 });
 
