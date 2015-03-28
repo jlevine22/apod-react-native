@@ -13,13 +13,14 @@ var {
   Image,
   TouchableOpacity,
   ActivityIndicatorIOS,
+  ScrollView,
 } = React;
+var xmldoc = require('xmldoc');
 
 var ApodReactNative = React.createClass({
   getInitialState: function() {
     return {
       loaded: false,
-      apod: null,
       cover: true,
     };
   },
@@ -33,10 +34,8 @@ var ApodReactNative = React.createClass({
       })
       .then((items) => items.map(item => {
         var description = item.childrenNamed('description');
-        var found = description[0].val.match(/href=\"([^\"]*)\"/i);
-        var alt = description[0].val.match(/alt=\"([^\"]*)\"/i);
-        item.url = found[1];
-        item.description = alt[1];
+        var href = description[0].val.match(/href=\"([^\"]*)\"/i);
+        item.url = href[1];
         return item;
       }))
       .then((items) => {
@@ -46,6 +45,8 @@ var ApodReactNative = React.createClass({
             .then(response => response.text())
             .then(responseText => {
               var foundImageSource = responseText.match(/img src=\"([^\"]*)\"/i);
+              var title = responseText.match(/<b>(.*?)<\/b>/i);
+              item.title = title && title[1];
               item.imageUrl = foundImageSource && 'http://apod.nasa.gov/apod/' + foundImageSource[1];
               return item;
             })
@@ -53,10 +54,12 @@ var ApodReactNative = React.createClass({
         });
         return Promise.all(promises);
       })
+      .then(items => items.filter(item => {
+        return (item.imageUrl && item.title);
+      }))
       .then((items) => {
         this.setState({
           loaded: true,
-          apod: apod[0],
           items: items,
         });
       })
@@ -84,17 +87,47 @@ var ApodReactNative = React.createClass({
     }
 
     return (
-        <TouchableOpacity onPress={this._onPressButton}>
-          <Image
-            source={{ uri: this.state.items[0].imageUrl }}
-            style={[styles.apod, {
-              resizeMode: this.state.cover ? Image.resizeMode.cover : Image.resizeMode.contain,
-            }]}>
-              <View style={{ flex: 1 }} />
-              <Text style={styles.apodDescription}>{this.state.items[0].description}</Text>
-          </Image>
-        </TouchableOpacity>
+        <ScrollView horizontal={true} pagingEnabled={true} style={styles.apodPager}>
+          {this.state.items.map(item => {
+            return (
+              <TouchableOpacity onPress={this._onPressButton} activeOpacity={1}>
+                <View style={{flex:1}}>
+                  <Apod item={item} cover={this.state.cover}/>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+      </ScrollView>
     );
+  }
+});
+
+var Apod = React.createClass({
+  imageCover: function() {
+    return (
+      <Image
+        source={{uri:this.props.item.imageUrl}}
+        style={[styles.apod, {resizeMode:Image.resizeMode.cover,}]}>
+      </Image>
+    );
+  },
+
+  imageContain: function() {
+    return (
+      <Image
+        source={{uri: this.props.item.imageUrl}}
+        style={[styles.apod, {resizeMode:Image.resizeMode.contain,}]}>
+          <View style={{ flex: 1 }} />
+          <Text style={styles.apodDescription}>{this.props.item.title}</Text>
+      </Image>
+    );
+  },
+
+  render: function() {
+    if (this.props.cover) {
+      return this.imageCover();
+    }
+    return this.imageContain();
   }
 });
 
@@ -115,13 +148,18 @@ var styles = StyleSheet.create({
     color: '#333333',
   },
   apod: {
-    flex: 1
+    width:375,
+    height:667,
+    flex: 1,
   },
   apodDescription: {
     textAlign: 'center',
     bottom: 0,
     color: '#FFFFFF',
     paddingBottom: 5,
+  },
+  apodPager: {
+    flex: 1,
   }
 });
 
