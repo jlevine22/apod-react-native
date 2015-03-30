@@ -77,11 +77,21 @@ var ApodReactNative = React.createClass({
     );
   },
 
+  touches: 0,
+
+  _decrementTouches: function() {
+    this.touches--;
+  },
+
   _onPressButton: function() {
-    LayoutAnimation.configureNext(animations.easeInEaseOut);
-    this.setState({
-      cover: !this.state.cover,
-    });
+    this.touches++;
+    setTimeout(this._decrementTouches, 250);
+    if (this.touches == 2) {
+      LayoutAnimation.configureNext(animations.easeInEaseOut);
+      this.setState({
+        cover: !this.state.cover,
+      });
+    }
   },
 
   render: function() {
