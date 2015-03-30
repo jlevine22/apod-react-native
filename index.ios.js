@@ -15,6 +15,7 @@ var {
   ActivityIndicatorIOS,
   ScrollView,
   StatusBarIOS,
+  LayoutAnimation,
 } = React;
 var xmldoc = require('xmldoc');
 
@@ -77,6 +78,7 @@ var ApodReactNative = React.createClass({
   },
 
   _onPressButton: function() {
+    LayoutAnimation.configureNext(animations.easeInEaseOut);
     this.setState({
       cover: !this.state.cover,
     });
@@ -94,7 +96,7 @@ var ApodReactNative = React.createClass({
     }
 
     return (
-        <ScrollView horizontal={true} pagingEnabled={true} style={styles.apodPager}>
+        <ScrollView horizontal={true} pagingEnabled={true} style={styles.apodPager} contentContainerStyle={{flex:1}}>
           {this.state.items.map(item => {
             return (
               <TouchableOpacity onPress={this._onPressButton} activeOpacity={1}>
@@ -145,15 +147,6 @@ var styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#F5FCFF',
   },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-  },
   apod: {
     width:375,
     height:667,
@@ -171,5 +164,20 @@ var styles = StyleSheet.create({
     backgroundColor: '#000000',
   }
 });
+
+var animations = {
+  easeInEaseOut: {
+    duration: 0.3,
+    create: {
+      type: LayoutAnimation.Types.easeInEaseOut,
+      property: LayoutAnimation.Properties.scaleXY,
+    },
+    update: {
+      delay: 0.1,
+      type: LayoutAnimation.Types.easeInEaseOut,
+    },
+  },
+};
+
 
 AppRegistry.registerComponent('ApodReactNative', () => ApodReactNative);
