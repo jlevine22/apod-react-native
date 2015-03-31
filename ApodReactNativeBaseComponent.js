@@ -36,7 +36,9 @@ var ApodReactNative = React.createClass({
       .then((items) => items.map(item => {
         var description = item.childrenNamed('description');
         var href = description[0].val.match(/href=\"([^\"]*)\"/i);
+        var thumb = description[0].val.match(/src=\"([^\"]*)\"/i);
         item.url = href[1];
+        item.imageThumbUrl = thumb && thumb[1];
         return item;
       }))
       .then((items) => {

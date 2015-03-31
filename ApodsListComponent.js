@@ -7,7 +7,10 @@ var {
   TouchableOpacity,
   StyleSheet,
   Text,
+  Image,
+  StatusBarIOS,
 } = React;
+var Dimensions = require('Dimensions');
 
 class ApodsListComponent extends React.Component {
 
@@ -20,13 +23,28 @@ class ApodsListComponent extends React.Component {
   }
 
   render() {
+    
+
     return (
       <View style={{flex:1, backgroundColor:'#FFFFFF'}}>
-        <ScrollView styles={styles.apodsScrollView}>
+        <ScrollView style={styles.apodsScrollView} contentContainerStyle={styles.apodsContent}>
           {this.props.items.map((item) => {
+            var image = item.imageThumbUrl ?
+              <Image
+                source={{uri: item.imageThumbUrl}}
+                style={{
+                  width:80,
+                  height:80,
+                  borderRadius:40,
+                  resizeMode: Image.resizeMode.stretch,}}>
+              </Image> :
+              null;
             return (
               <TouchableOpacity onPress={this.onPress(item)}>
-                <Text style={{flex:1,color:'#000000'}}>{item.title}</Text>
+                <View style={{margin:5,width:(Dimensions.get('window').width-20)/2,alignItems:'center',}}>
+                  {image}
+                  <Text style={{flex:1,color:'#000000'}}>{item.title}</Text>
+                </View>
               </TouchableOpacity>
             );
           })}
@@ -40,6 +58,11 @@ var styles = StyleSheet.create({
   apodsScrollView: {
     flex: 1,
     backgroundColor: '#FFFFFF',
+  },
+  apodsContent: {
+    justifyContent:'space-around',
+    flexDirection:'row',
+    flexWrap:'wrap',
   }
 });
 
