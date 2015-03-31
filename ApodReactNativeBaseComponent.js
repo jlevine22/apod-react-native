@@ -58,18 +58,24 @@ var ApodReactNative = React.createClass({
     var ROUTES = [
       {
         name: 'Apods',
-        renderer: (route, navigator) => {
+        renderer: (route, navigator, onRef) => {
           return(
-            <ApodList items={this.state.items} onItemSelected={(index) => {
-              this.setState({ selectedIndex: index });
-              navigator.jumpTo(ROUTES[1]);
-            }} />
+            <ApodList
+              items={this.state.items}
+              onItemSelected={(index) => {
+                this.setState({ selectedIndex: index });
+                navigator.jumpTo(ROUTES[1]);
+              }}/>
           );
-        }
+        },
+        onWillFocus: () => {
+          StatusBarIOS.setHidden(false, 1);
+          StatusBarIOS.setStyle(0, true);
+        },
       },
       {
         name: 'Selected Apod',
-        renderer: (route, navigator) => {
+        renderer: (route, navigator, onRef) => {
           return (<Apod item={this.state.items[this.state.selectedIndex]} />);
         },
         sceneConfig: Navigator.SceneConfigs.FloatFromBottom,
@@ -84,6 +90,16 @@ var ApodReactNative = React.createClass({
           initialRouteStack={ROUTES}
           configureScene={route => {
             return route.sceneConfig || Navigator.SceneConfigs.FloatFromRight;
+          }}
+          onWillFocus={route => {
+            if (route.onWillFocus) {
+              route.onWillFocus();
+            }
+          }}
+          onDidFocus={(route) => {
+            if (route.onDidFocus) {
+              route.onDidFocus();
+            }
           }}
         />
       </View>
