@@ -16,6 +16,7 @@ var {
 var xmldoc = require('xmldoc');
 var Dimensions = require('Dimensions');
 var Apod = require('./ApodComponent');
+var ApodList = require('./ApodsListComponent');
 
 var ApodReactNative = React.createClass({
   getInitialState: function() {
@@ -61,7 +62,7 @@ var ApodReactNative = React.createClass({
         this.setState({
           loaded: true,
           items: items,
-          selectedItem: 0,
+          selectedIndex: 0,
         });
       })
       .done();
@@ -91,42 +92,33 @@ var ApodReactNative = React.createClass({
         name: 'Apods',
         renderer: (route, navigator) => {
           return(
-            <View style={{flex:1, backgroundColor:'#FFFFFF'}}>
-              <ScrollView styles={styles.apodsScrollView}>
-                {this.state.items.map((item) => {
-                  return (
-                    <TouchableOpacity onPress={() => {
-                      this.setState({ selectedItem: this.state.items.indexOf(item) });
-                      navigator.jumpTo(ROUTES[1]);
-                    }}>
-
-                      <Text style={{flex:1,color:'#000000'}}>{item.title}</Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </ScrollView>
-            </View>
+            <ApodList items={this.state.items} onItemSelected={(index) => {
+              this.setState({ selectedIndex: index });
+              navigator.jumpTo(ROUTES[1]);
+            }} />
           );
         }
       },
       {
         name: 'Selected Apod',
         renderer: (route, navigator) => {
-          return (<Apod item={this.state.items[this.state.selectedItem]} />);
+          return (<Apod item={this.state.items[this.state.selectedIndex]} />);
         },
         sceneConfig: Navigator.SceneConfigs.FloatFromBottom,
       }
     ];
 
     return (
-      <Navigator
-        renderScene={this.renderScene}
-        initialRoute={ROUTES[1]}
-        initialRouteStack={ROUTES}
-        configureScene={route => {
-          return route.sceneConfig || Navigator.SceneConfigs.FloatFromRight;
-        }}
-      />
+      <View style={{flex:1,backgroundColor:'#111111',}}>
+        <Navigator
+          renderScene={this.renderScene}
+          initialRoute={ROUTES[1]}
+          initialRouteStack={ROUTES}
+          configureScene={route => {
+            return route.sceneConfig || Navigator.SceneConfigs.FloatFromRight;
+          }}
+        />
+      </View>
     );
   }
 });
@@ -137,10 +129,6 @@ var styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#000000',
   },
-  apodsScrollView: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-  }
 });
 
 module.exports = ApodReactNative;

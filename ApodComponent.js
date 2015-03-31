@@ -75,7 +75,7 @@ var Apod = React.createClass({
 
     return (
       <TouchableOpacity onPress={this.onPress} activeOpacity={1}>
-        {image}
+        <View style={{flex:1, backgroundColor:'rgba(0,0,0,0)',}}>{image}</View>
       </TouchableOpacity>
     );
   }
