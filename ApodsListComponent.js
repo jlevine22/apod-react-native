@@ -47,6 +47,9 @@ class ApodsListComponent extends React.Component {
               </TouchableOpacity>
             );
           })}
+          {this.props.items.length % 2 == 1 ?
+            <View style={styles.apodItemWrapper} /> :
+            null}
         </ScrollView>
       </View>
     );
