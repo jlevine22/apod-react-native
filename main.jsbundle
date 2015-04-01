@@ -38345,7 +38345,7 @@ for (eventType in topLevelTypes) {
 
 module.exports = ReactTestUtils;
 });
-__d('ApodReactNative/ApodReactNativeBaseComponent',["react-native/Libraries/react-native/react-native","xmldoc/index","Dimensions","ApodReactNative/ApodComponent","ApodReactNative/ApodsListComponent"],function(global, require, requireDynamic, requireLazy, module, exports) {  'use strict';
+__d('ApodReactNative/ApodReactNativeBaseComponent',["react-native/Libraries/react-native/react-native","xmldoc/index","Dimensions","ApodReactNative/ApodComponent","ApodReactNative/ApodsListComponent","ApodReactNative/getApods"],function(global, require, requireDynamic, requireLazy, module, exports) {  'use strict';
 
 var React = require('react-native/Libraries/react-native/react-native');
 var $__0=
@@ -38364,57 +38364,23 @@ var xmldoc = require('xmldoc/index');
 var Dimensions = require('Dimensions');
 var Apod = require('ApodReactNative/ApodComponent');
 var ApodList = require('ApodReactNative/ApodsListComponent');
+var getApods = require('ApodReactNative/getApods');
 
 var ApodReactNative = React.createClass({displayName: "ApodReactNative",
   getInitialState: function() {
     return {
       loaded: false,
-      cover: true,
     };
   },
 
   componentDidMount: function() {
-    fetch('http://apod.nasa.gov/apod.rss')
-      .then(function(response)  {return response.text();})
-      .then(function(responseText)  {
-        var document = new xmldoc.XmlDocument(responseText);
-        return document.childNamed('channel').childrenNamed('item');
-      })
-      .then(function(items)  {return items.map(function(item)  {
-        var description = item.childrenNamed('description');
-        var href = description[0].val.match(/href=\"([^\"]*)\"/i);
-        var thumb = description[0].val.match(/src=\"([^\"]*)\"/i);
-        item.url = href[1];
-        item.imageThumbUrl = thumb && thumb[1];
-        return item;
-      });})
-      .then(function(items)  {
-        var promises = [];
-        items.forEach(function(item)  {
-          promises.push(fetch(item.url)
-            .then(function(response)  {return response.text();})
-            .then(function(responseText)  {
-              var foundImageSource = responseText.match(/img src=\"([^\"]*)\"/i);
-              var title = responseText.match(/<b>(.*?)<\/b>/i);
-              item.title = title && title[1];
-              item.imageUrl = foundImageSource && 'http://apod.nasa.gov/apod/' + foundImageSource[1];
-              return item;
-            })
-          );
-        });
-        return Promise.all(promises);
-      })
-      .then(function(items)  {return items.filter(function(item)  {
-        return (item.imageUrl && item.title);
-      });})
-      .then(function(items)  {
-        this.setState({
-          loaded: true,
-          items: items,
-          selectedIndex: 0,
-        });
-      }.bind(this))
-      .done();
+    getApods().then(function(apods)  {
+      this.setState({
+        items: apods,
+        loaded: true,
+        selectedIndex: 0,
+      }).done();
+    }.bind(this));
   },
 
   renderScene: function(route, navigator) {
@@ -38439,18 +38405,24 @@ var ApodReactNative = React.createClass({displayName: "ApodReactNative",
     var ROUTES = [
       {
         name: 'Apods',
-        renderer: function(route, navigator)  {
+        renderer: function(route, navigator, onRef)  {
           return(
-            React.createElement(ApodList, {items: this.state.items, onItemSelected: function(index)  {
-              this.setState({ selectedIndex: index });
-              navigator.jumpTo(ROUTES[1]);
-            }.bind(this)})
+            React.createElement(ApodList, {
+              items: this.state.items, 
+              onItemSelected: function(index)  {
+                this.setState({ selectedIndex: index });
+                navigator.jumpTo(ROUTES[1]);
+              }.bind(this)})
           );
-        }.bind(this)
+        }.bind(this),
+        onWillFocus: function()  {
+          StatusBarIOS.setHidden(false, 1);
+          StatusBarIOS.setStyle(0, true);
+        },
       },
       {
         name: 'Selected Apod',
-        renderer: function(route, navigator)  {
+        renderer: function(route, navigator, onRef)  {
           return (React.createElement(Apod, {item: this.state.items[this.state.selectedIndex]}));
         }.bind(this),
         sceneConfig: Navigator.SceneConfigs.FloatFromBottom,
@@ -38465,6 +38437,16 @@ var ApodReactNative = React.createClass({displayName: "ApodReactNative",
           initialRouteStack: ROUTES, 
           configureScene: function(route)  {
             return route.sceneConfig || Navigator.SceneConfigs.FloatFromRight;
+          }, 
+          onWillFocus: function(route)  {
+            if (route.onWillFocus) {
+              route.onWillFocus();
+            }
+          }, 
+          onDidFocus: function(route)  {
+            if (route.onDidFocus) {
+              route.onDidFocus();
+            }
           }}
         )
       )
@@ -40432,7 +40414,7 @@ var Apod = React.createClass({displayName: "Apod",
 
     return (
       React.createElement(TouchableOpacity, {onPress: this.onPress, activeOpacity: 1}, 
-        React.createElement(View, {style: {flex:1, backgroundColor:'rgba(0,0,0,0)',}}, image)
+        React.createElement(View, {style: {flex:1, backgroundColor:'#000000',}}, image)
       )
     );
   }
@@ -40489,7 +40471,7 @@ var $__0=
   React,ScrollView=$__0.ScrollView,View=$__0.View,TouchableOpacity=$__0.TouchableOpacity,StyleSheet=$__0.StyleSheet,Text=$__0.Text,Image=$__0.Image,StatusBarIOS=$__0.StatusBarIOS;
 var Dimensions = require('Dimensions');
 
-var ____Class6=React.Component;for(var ____Class6____Key in ____Class6){if(____Class6.hasOwnProperty(____Class6____Key)){ApodsListComponent[____Class6____Key]=____Class6[____Class6____Key];}}var ____SuperProtoOf____Class6=____Class6===null?null:____Class6.prototype;ApodsListComponent.prototype=Object.create(____SuperProtoOf____Class6);ApodsListComponent.prototype.constructor=ApodsListComponent;ApodsListComponent.__superConstructor__=____Class6;function ApodsListComponent(){if(____Class6!==null){____Class6.apply(this,arguments);}}
+var ____Class9=React.Component;for(var ____Class9____Key in ____Class9){if(____Class9.hasOwnProperty(____Class9____Key)){ApodsListComponent[____Class9____Key]=____Class9[____Class9____Key];}}var ____SuperProtoOf____Class9=____Class9===null?null:____Class9.prototype;ApodsListComponent.prototype=Object.create(____SuperProtoOf____Class9);ApodsListComponent.prototype.constructor=ApodsListComponent;ApodsListComponent.__superConstructor__=____Class9;function ApodsListComponent(){if(____Class9!==null){____Class9.apply(this,arguments);}}
 
   ApodsListComponent.prototype.onPress=function(item) {
     return function()  {
@@ -40500,31 +40482,33 @@ var ____Class6=React.Component;for(var ____Class6____Key in ____Class6){if(____C
   };
 
   ApodsListComponent.prototype.render=function() {
-    
-
     return (
       React.createElement(View, {style: {flex:1, backgroundColor:'#FFFFFF'}}, 
+        React.createElement(View, {style: styles.headerSpacer}), 
+        React.createElement(View, {style: styles.header}, 
+          React.createElement(Text, {style: styles.headerTitle}, "Recent APODS")
+        ), 
+        React.createElement(View, {style: styles.headerSeparator}), 
         React.createElement(ScrollView, {style: styles.apodsScrollView, contentContainerStyle: styles.apodsContent}, 
           this.props.items.map(function(item)  {
             var image = item.imageThumbUrl ?
               React.createElement(Image, {
                 source: {uri: item.imageThumbUrl}, 
-                style: {
-                  width:80,
-                  height:80,
-                  borderRadius:40,
-                  resizeMode: Image.resizeMode.stretch,}}
+                style: styles.apodItemIcon}
               ) :
               null;
             return (
               React.createElement(TouchableOpacity, {onPress: this.onPress(item)}, 
-                React.createElement(View, {style: {margin:5,width:(Dimensions.get('window').width-20)/2,alignItems:'center',}}, 
+                React.createElement(View, {style: styles.apodItemWrapper}, 
                   image, 
-                  React.createElement(Text, {style: {flex:1,color:'#000000'}}, item.title)
+                  React.createElement(Text, {style: styles.apodItemText}, item.title)
                 )
               )
             );
-          }.bind(this))
+          }.bind(this)), 
+          this.props.items.length % 2 == 1 ?
+            React.createElement(View, {style: styles.apodItemWrapper}) :
+            null
         )
       )
     );
@@ -40532,6 +40516,7 @@ var ____Class6=React.Component;for(var ____Class6____Key in ____Class6){if(____C
 
 
 var styles = StyleSheet.create({
+  // ScrollView
   apodsScrollView: {
     flex: 1,
     backgroundColor: '#FFFFFF',
@@ -40540,10 +40525,86 @@ var styles = StyleSheet.create({
     justifyContent:'space-around',
     flexDirection:'row',
     flexWrap:'wrap',
+  },
+  // Header
+  headerSpacer: {
+    height: 20,
+  },
+  header: {
+    height: 30,
+    backgroundColor:'#FEFEFE',
+    justifyContent:'center',
+    alignItems:'center',
+  },
+  headerSeparator: {
+    height: 1,
+    backgroundColor:'#F0F0F0',
+  },
+  headerTitle: {
+    fontWeight:'600',
+  },
+  // Apod Item
+  apodItemWrapper: {
+    margin: 5,
+    width: (Dimensions.get('window').width - 20) / 2,
+    alignItems:'center',
+  },
+  apodItemIcon: {
+    width:80,
+    height:80,
+    borderRadius:40,
+    resizeMode: Image.resizeMode.cover,
+  },
+  apodItemText: {
+    fontSize: 12,
+    color:'#000000',
+    flex: 1,
+    marginTop: 5,
   }
+
 });
 
 module.exports = ApodsListComponent;
+});
+__d('ApodReactNative/getApods',["xmldoc/index"],function(global, require, requireDynamic, requireLazy, module, exports) {  'use strict';
+
+var xmldoc = require('xmldoc/index');
+
+module.exports = function getApods() {
+  return fetch('http://apod.nasa.gov/apod.rss')
+    .then(function(response)  {return response.text();})
+    .then(function(responseText)  {
+      var document = new xmldoc.XmlDocument(responseText);
+      return document.childNamed('channel').childrenNamed('item');
+    })
+    .then(function(items)  {return items.map(function(item)  {
+      var description = item.childrenNamed('description');
+      var href = description[0].val.match(/href=\"([^\"]*)\"/i);
+      var thumb = description[0].val.match(/src=\"([^\"]*)\"/i);
+      item.url = href[1];
+      item.imageThumbUrl = thumb && thumb[1];
+      return item;
+    });})
+    .then(function(items)  {
+      var promises = [];
+      items.forEach(function(item)  {
+        promises.push(fetch(item.url)
+          .then(function(response)  {return response.text();})
+          .then(function(responseText)  {
+            var foundImageSource = responseText.match(/img src=\"([^\"]*)\"/i);
+            var title = responseText.match(/<b>(.*?)<\/b>/i);
+            item.title = title && title[1].trim();
+            item.imageUrl = foundImageSource && 'http://apod.nasa.gov/apod/' + foundImageSource[1];
+            return item;
+          })
+        );
+      });
+      return Promise.all(promises);
+    })
+    .then(function(items)  {return items.filter(function(item)  {
+      return (item.imageUrl && item.title);
+    });});
+}
 });
 ;require("ApodReactNative/index.ios");
 //@ sourceMappingURL=/index.ios.map
